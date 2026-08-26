@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>实习记录</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>实习记录</h1>
+    <button id="btn-new" class="btn btn-primary" type="button">+ 新增</button>
+  </header>
+
+  <main>
+    <!-- 列表视图（M0 简易版：仅按时间倒序列出；搜索/筛选/日历在 M1） -->
+    <section id="list-view">
+      <h2 class="view-title">最近记录</h2>
+      <p id="empty-hint" class="empty-hint" hidden>还没有记录，点右上角「+ 新增」开始吧。</p>
+      <ul id="entry-list" class="entry-list"></ul>
+    </section>
+
+    <!-- 录入表单 -->
+    <section id="form-view" hidden>
+      <h2 id="form-title" class="view-title">新增记录</h2>
+      <form id="entry-form">
+        <div class="field-row">
+          <div class="field">
+            <label for="f-date">日期</label>
+            <input type="date" id="f-date" required>
+          </div>
+          <div class="field">
+            <label for="f-project">项目</label>
+            <input type="text" id="f-project" list="project-list" placeholder="如：官网重构（可留空）">
+            <datalist id="project-list"></datalist>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-summary">1. 一句话概括这件事 <span class="req">*</span></label>
+          <textarea id="f-summary" rows="2" required placeholder="一句话概括这件事"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-context">2. 这件事在项目里是哪一环，解决了什么问题？</label>
+          <textarea id="f-context" rows="3" placeholder="可留空"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-blocker">3. 实践时的卡点是什么？又对此给出了什么样的思路或解决方案？</label>
+          <textarea id="f-blocker" rows="3" placeholder="可留空"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-outcome">4. 最后交付了什么，或者说带来了哪些变化？</label>
+          <textarea id="f-outcome" rows="3" placeholder="可留空"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-cancel" class="btn">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

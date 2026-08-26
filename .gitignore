@@ -1,0 +1,17 @@
+# 编辑器
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Python（tools/ 脚本后续会有）
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 其他
+.DS_Store
+*.log
