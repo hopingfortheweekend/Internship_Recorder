@@ -8,6 +8,7 @@
   --accent-bg: #e8effd;
   --border: #e5e7eb;
   --danger: #d92d20;
+  --hover: #eceef2;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,10 +20,11 @@ body {
   line-height: 1.6;
 }
 
-.topbar, main {
+.topbar, .tabs, main {
   max-width: 640px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 /* 顶栏 */
@@ -35,9 +37,22 @@ body {
   align-items: center;
   justify-content: space-between;
   padding-top: 14px;
-  padding-bottom: 10px;
+  padding-bottom: 6px;
 }
 .topbar h1 { font-size: 20px; font-weight: 600; }
+
+/* 视图切换 */
+.tabs { display: flex; gap: 20px; padding-bottom: 10px; }
+.tab {
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 15px;
+  padding: 6px 2px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
 
 /* 按钮 */
 .btn {
@@ -51,6 +66,16 @@ body {
 }
 .btn:active { opacity: 0.8; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
 
 /* 视图标题 */
 .view-title {
@@ -60,6 +85,27 @@ body {
   margin: 6px 0 12px;
 }
 
+/* 搜索与筛选 */
+.search-row { display: flex; gap: 8px; margin: 4px 0 12px; }
+.search-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font: inherit;
+}
+.search-row select {
+  max-width: 45%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  font: inherit;
+  color: var(--text);
+}
+
 /* 记录列表 */
 .entry-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .entry-card {
@@ -67,7 +113,9 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
+  cursor: pointer;
 }
+.entry-card:active { background: var(--hover); }
 .entry-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .entry-date { font-size: 13px; color: var(--text-2); }
 .entry-project {
@@ -77,7 +125,7 @@ body {
   padding: 2px 8px;
   border-radius: 10px;
 }
-.entry-summary { font-size: 15px; }
+.entry-summary { font-size: 15px; white-space: pre-wrap; }
 
 .empty-hint {
   color: var(--text-2);
@@ -85,6 +133,65 @@ body {
   padding: 36px 0;
   font-size: 14px;
 }
+.empty-hint .btn { margin-top: 12px; }
+
+/* 日历 */
+.cal-header { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
+.cal-title { flex: 1; text-align: center; font-size: 16px; font-weight: 600; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+}
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.cal-head { font-size: 12px; color: var(--text-2); }
+.cal-day { cursor: pointer; }
+.cal-day:hover { background: var(--hover); }
+.cal-day.today { color: var(--accent); font-weight: 600; }
+.cal-day.selected { background: var(--accent); color: #fff; font-weight: 600; }
+.cal-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+.cal-day.selected .cal-badge { background: #fff; color: var(--accent); }
+
+#day-panel { margin-top: 16px; }
+
+/* 详情 */
+.detail-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.detail-item { margin-top: 14px; }
+.detail-q { font-size: 13px; color: var(--text-2); margin-bottom: 4px; }
+.detail-a { font-size: 15px; white-space: pre-wrap; }
+.detail-actions { display: flex; gap: 12px; margin-top: 16px; }
+.detail-actions .btn { flex: 1; }
 
 /* 表单 */
 .field { margin-bottom: 14px; }
