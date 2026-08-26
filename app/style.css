@@ -233,4 +233,18 @@ body {
   z-index: 100;
 }
 
+/* 数据备份 */
+.data-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.data-note {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+.data-actions { display: flex; gap: 12px; margin-bottom: 10px; }
+.data-actions .btn { flex: 1; }
+
 main { padding-bottom: 48px; }

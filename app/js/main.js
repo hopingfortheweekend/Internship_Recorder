@@ -53,11 +53,11 @@ function uid() {
 }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, duration = 2000) {
   toastEl.textContent = msg;
   toastEl.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2000);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, duration);
 }
 
 function findEntry(id) {
@@ -239,6 +239,16 @@ projectFilter.addEventListener('change', () => {
   renderList();
 });
 
+document.getElementById('btn-export').addEventListener('click', exportBackup);
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+document.getElementById('import-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  e.target.value = ''; // 允许下次再选同一文件
+  if (file) importBackup(file);
+});
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!fSummary.value.trim()) {
@@ -285,6 +295,105 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
+/* ---------- 备份与导入 ---------- */
+const BACKUP_KEY = 'last_backup_at';
+
+function lastBackupISO() {
+  return localStorage.getItem(BACKUP_KEY);
+}
+
+function daysSince(iso) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
+function renderBackupStatus() {
+  const el = document.getElementById('backup-status');
+  const iso = lastBackupISO();
+  if (!iso) {
+    el.textContent = '从未导出备份';
+    return;
+  }
+  const d = daysSince(iso);
+  el.textContent = d <= 0 ? '上次备份：今天' : d === 1 ? '上次备份：昨天' : `上次备份：${d} 天前`;
+}
+
+function remindBackupIfDue() {
+  if (entries.length === 0) return;
+  const iso = lastBackupISO();
+  if (!iso || daysSince(iso) >= 30) toast('已超过 30 天未导出备份，建议在列表底部备份一次', 4000);
+}
+
+function exportBackup() {
+  const data = {
+    format: 'internship-recorder-backup',
+    version: 1,
+    exported_at: new Date().toISOString(),
+    entries,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup-${todayStr()}.json`;
+  document.body.appendChild(a); // Firefox 需要元素在文档中
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+  renderBackupStatus();
+  toast(`已导出 backup-${todayStr()}.json`);
+}
+
+async function importBackup(file) {
+  let data;
+  try {
+    data = JSON.parse(await file.text());
+  } catch {
+    toast('无法解析该文件');
+    return;
+  }
+  if (data.format !== 'internship-recorder-backup' || !Array.isArray(data.entries)) {
+    toast('不是有效的备份文件');
+    return;
+  }
+
+  // 校验条目
+  const valid = data.entries.filter(
+    (e) => e && typeof e.id === 'string' && typeof e.date === 'string' && typeof e.summary === 'string'
+  );
+  const skipped = data.entries.length - valid.length;
+
+  // 合并策略：按 id 合并，保留 updated_at 较新的一方（见设计文档 §4.3）
+  const existing = new Map(entries.map((x) => [x.id, x]));
+  let addCount = 0;
+  let updateCount = 0;
+  const toWrite = [];
+  for (const item of valid) {
+    const local = existing.get(item.id);
+    if (!local) {
+      addCount++;
+      toWrite.push(item);
+    } else if (new Date(item.updated_at || 0).getTime() > new Date(local.updated_at || 0).getTime()) {
+      updateCount++;
+      toWrite.push({ ...local, ...item, id: local.id });
+    }
+  }
+
+  if (addCount + updateCount === 0) {
+    toast(skipped > 0 ? `没有可导入的内容（跳过 ${skipped} 条无效记录）` : '没有可导入的新内容');
+    return;
+  }
+
+  let msg = `将新增 ${addCount} 条`;
+  if (updateCount) msg += `、更新 ${updateCount} 条`;
+  if (skipped) msg += `，跳过 ${skipped} 条无效记录`;
+  if (!confirm(`${msg}，确认导入？`)) return;
+
+  for (const item of toWrite) await Store.put(item);
+  await loadEntries();
+  toast(`已导入：新增 ${addCount} 条${updateCount ? `、更新 ${updateCount} 条` : ''}`);
+}
+
 /* ---------- 数据加载 ---------- */
 async function loadEntries() {
   entries = await Store.getAll();
@@ -296,4 +405,6 @@ async function loadEntries() {
 (async function init() {
   await loadEntries();
   switchView('list');
+  renderBackupStatus();
+  remindBackupIfDue();
 })();

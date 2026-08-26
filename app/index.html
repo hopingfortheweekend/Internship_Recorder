@@ -31,6 +31,16 @@
       <p id="list-empty" class="empty-hint" hidden>还没有记录，点右上角「+ 新增」开始吧。</p>
       <p id="list-no-result" class="empty-hint" hidden>没有匹配的记录。</p>
       <ul id="entry-list" class="entry-list"></ul>
+
+      <div class="data-footer">
+        <p class="data-note" id="backup-status"></p>
+        <div class="data-actions">
+          <button id="btn-export" class="btn" type="button">导出备份</button>
+          <button id="btn-import" class="btn" type="button">导入数据</button>
+        </div>
+        <p class="data-note">备份文件可传到电脑（如微信「文件传输助手」），供整理脚本使用</p>
+        <input type="file" id="import-file" accept=".json,application/json" hidden>
+      </div>
     </section>
 
     <!-- 日历视图 -->
