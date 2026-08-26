@@ -402,6 +402,13 @@ async function loadEntries() {
 }
 
 /* ---------- 启动 ---------- */
+// 注册 service worker（仅 HTTPS / localhost 生效；本地 file:// 打开时静默失败）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 (async function init() {
   await loadEntries();
   switchView('list');
