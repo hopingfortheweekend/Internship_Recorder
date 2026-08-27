@@ -1,6 +1,6 @@
 // service worker：资源缓存，首次成功加载后离线可用（设计文档 §3.1）
 // 更新页面资源时，请把 CACHE 名称里的版本号 +1（如 v2），旧缓存会在 activate 时被清理
-const CACHE = 'internship-recorder-v1';
+const CACHE = 'internship-recorder-v2';
 const ASSETS = [
   './',
   './index.html',

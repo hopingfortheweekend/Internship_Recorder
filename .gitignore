@@ -15,3 +15,6 @@ venv/
 # 其他
 .DS_Store
 *.log
+
+# 个人备份数据（仓库公开，绝不入库）
+backup-*.json

@@ -364,29 +364,56 @@ async function importBackup(file) {
   const skipped = data.entries.length - valid.length;
 
   // 合并策略：按 id 合并，保留 updated_at 较新的一方（见设计文档 §4.3）
+  // 两类损坏数据的恢复（正常使用不可能出现，只可能来自手改 JSON）：
+  // ① 文件内同 id 多条 → 只保留第一条
+  // ② 与本地同 id、updated_at 完全相同但内容不同 → 视为另一条记录，分配新 id（正常编辑必改 updated_at）
   const existing = new Map(entries.map((x) => [x.id, x]));
+  const fileSeen = new Set();
+  const contentEq = (a, b) =>
+    ['date', 'summary', 'context', 'blocker', 'outcome', 'project']
+      .every((k) => (a[k] || '') === (b[k] || ''));
   let addCount = 0;
   let updateCount = 0;
+  let dupSkip = 0;    // 文件内重复 id
+  let sameSkip = 0;   // 本地已有相同或更新版本
   const toWrite = [];
   for (const item of valid) {
+    if (fileSeen.has(item.id)) {
+      dupSkip++;
+      continue;
+    }
+    fileSeen.add(item.id);
     const local = existing.get(item.id);
+    const tLocal = new Date(local ? local.updated_at || 0 : 0).getTime();
+    const tFile = new Date(item.updated_at || 0).getTime();
     if (!local) {
       addCount++;
       toWrite.push(item);
-    } else if (new Date(item.updated_at || 0).getTime() > new Date(local.updated_at || 0).getTime()) {
+    } else if (tFile === tLocal && !contentEq(local, item)) {
+      addCount++;
+      toWrite.push({ ...item, id: uid() });
+    } else if (tFile > tLocal) {
       updateCount++;
       toWrite.push({ ...local, ...item, id: local.id });
+    } else {
+      sameSkip++;
     }
   }
 
+  const skipMsg = [
+    skipped && `跳过 ${skipped} 条无效记录`,
+    dupSkip && `跳过 ${dupSkip} 条文件内重复 id`,
+    sameSkip && `跳过 ${sameSkip} 条本地已有相同或更新版本`,
+  ].filter(Boolean).join('、');
+
   if (addCount + updateCount === 0) {
-    toast(skipped > 0 ? `没有可导入的内容（跳过 ${skipped} 条无效记录）` : '没有可导入的新内容');
+    toast(skipMsg ? `没有可导入的内容（${skipMsg}）` : '没有可导入的新内容');
     return;
   }
 
   let msg = `将新增 ${addCount} 条`;
   if (updateCount) msg += `、更新 ${updateCount} 条`;
-  if (skipped) msg += `，跳过 ${skipped} 条无效记录`;
+  if (skipMsg) msg += `，${skipMsg}`;
   if (!confirm(`${msg}，确认导入？`)) return;
 
   for (const item of toWrite) await Store.put(item);
